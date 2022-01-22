@@ -40,6 +40,36 @@ exP.get("/shop",function (req,res){
     })
 })
 
+exP.get("/cat",function (request,response){
+    let id = request.query.id;
+
+    let cat = new Promise((resolve,reject)=>{
+        conn.query("SELECT * FROM category WHERE id="+id, function (err,queryResult){
+            if(err){
+                reject(err)
+            }
+            resolve(queryResult)
+        })
+    });
+
+    let goodsByCat = new Promise((resolve,reject)=>{
+        conn.query("SELECT * FROM goods WHERE category="+id, function (err,queryResult){
+            if(err){
+                reject(err)
+            }
+            resolve(queryResult)
+        })
+    });
+
+    Promise.all([cat, goodsByCat]).then(resultArray =>{
+        response.render('cat',{
+            categ:resultArray[0],
+            goodsByCateg:resultArray[1]
+        })
+    })
+})
+
+
 
 
 
