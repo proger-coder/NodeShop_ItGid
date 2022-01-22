@@ -1,0 +1,9 @@
+include header
+h2 Магазин Ноутбуков
+h4 #{sample}
+
+each val,index in goods
+    p #{val.name}
+    img(src=`images/${val.image}` alt=`${val.description}`)
+
+
