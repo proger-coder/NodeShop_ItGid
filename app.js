@@ -67,6 +67,17 @@ exP.get("/cat",function (request,response){
             goodsByCateg:resultArray[1]
         })
     })
+});
+
+exP.get('/item',function(request,response){
+    let id = request.query.id || 1;
+    conn.query("SELECT * FROM goods WHERE id="+id, function (err,result, fields) {
+        if(err) throw err
+        console.log(result);
+        response.render('item',{
+            item:result,
+        })
+    })
 })
 
 
