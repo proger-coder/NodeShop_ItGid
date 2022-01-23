@@ -41,7 +41,7 @@ exP.get("/shop",function (req,res){
 })
 
 exP.get("/cat",function (request,response){
-    let id = request.query.id;
+    let id = request.query.id || 1;
 
     let cat = new Promise((resolve,reject)=>{
         conn.query("SELECT * FROM category WHERE id="+id, function (err,queryResult){

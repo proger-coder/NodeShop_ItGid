@@ -1,12 +1,13 @@
 include header
-h2 Категории
 
-h3 #{categ[0].category}
-p #{categ[0].description}
-img(src=`images/${categ[0].image}` alt=`${categ[0].description}`)
+div(class='wrap')
+    div(class='content')
+        header(class='site-header')
+            include site_header
 
-each val,index in goodsByCateg
-    p #{val.name}
-    img(src=`images/${val.image}` alt=`${val.description}`)
-
-
+        div(class='container')
+            div(class='row')
+                div(class='col col-md-12')
+                    h2 #{categ[0]['category']}
+                each val, index in goodsByCateg
+                    include card.pug
