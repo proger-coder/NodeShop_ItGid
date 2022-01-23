@@ -11,3 +11,8 @@ div(class='wrap')
                     h2 #{categ[0]['category']}
                 each val, index in goodsByCateg
                     include card.pug
+
+                div #{categ[0]['description']}
+
+    include nav
+include footer

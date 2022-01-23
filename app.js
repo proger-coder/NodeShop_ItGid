@@ -80,6 +80,12 @@ exP.get('/item',function(request,response){
     })
 })
 
+exP.post('/get-category-list',(request, response)=>{
+    conn.query("SELECT id,category FROM category", (err,result,fields)=>{
+        if (err) throw err;
+        response.json(result)
+    })
+})
 
 
 
