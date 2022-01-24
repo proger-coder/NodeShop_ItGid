@@ -1,4 +1,3 @@
-console.log('nav.js');
 
 document.querySelector('.close-nav').onclick = closeNav;
 document.querySelector('.show-nav').onclick = showNav;

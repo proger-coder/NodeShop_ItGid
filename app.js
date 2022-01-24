@@ -9,6 +9,9 @@ exP.listen(port);
 /* задаём папку со статикой */
 exP.use(express.static('public'));
 
+/* задаём метод чтения ответа ?!?!?! а-ля body parser */
+exP.use(express.json());
+
 /* задаём шаблонизатор */
 exP.set('view engine','pug');
 
@@ -85,6 +88,21 @@ exP.post('/get-category-list',(request, response)=>{
         if (err) throw err;
         response.json(result)
     })
+})
+
+exP.post('/get-goods-info',(request, response)=>{
+    let reqKeysArray = request.body.key; // ['4','5']
+    let keysString = reqKeysArray.join(',')// 4,5
+    conn.query('SELECT id,name,cost FROM goods WHERE id IN ('+keysString+')', function (error, result, fields) {
+        if (error) throw error;
+        // result - это неудобный массив: [ { id: 4,name, cost},{ id: 7,name, cost}]
+        let goods = {};
+        result.forEach((elem, index)=>{
+            goods[elem.id] = elem;
+        });
+        // goods - это удобный (индексированный) массив: [ 4:{ id: 4,name, cost},7:{ id: 7,name, cost}]
+        response.json(goods);
+    });
 })
 
 
