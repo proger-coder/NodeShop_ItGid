@@ -92,17 +92,21 @@ exP.post('/get-category-list',(request, response)=>{
 
 exP.post('/get-goods-info',(request, response)=>{
     let reqKeysArray = request.body.key; // ['4','5']
-    let keysString = reqKeysArray.join(',')// 4,5
-    conn.query('SELECT id,name,cost FROM goods WHERE id IN ('+keysString+')', function (error, result, fields) {
-        if (error) throw error;
-        // result - это неудобный массив: [ { id: 4,name, cost},{ id: 7,name, cost}]
-        let goods = {};
-        result.forEach((elem, index)=>{
-            goods[elem.id] = elem;
+    if (reqKeysArray.length !== 0){
+        let keysString = reqKeysArray.join(',')// 4,5
+        conn.query('SELECT id,name,cost FROM goods WHERE id IN ('+keysString+')', function (error, result, fields) {
+            if (error) throw error;
+            // result - это неудобный массив: [ { id: 4,name, cost},{ id: 7,name, cost}]
+            let goods = {};
+            result.forEach((elem, index)=>{
+                goods[elem.id] = elem;
+            });
+            // goods - это удобный (индексированный) массив: [ 4:{ id: 4,name, cost},7:{ id: 7,name, cost}]
+            response.json(goods);
         });
-        // goods - это удобный (индексированный) массив: [ 4:{ id: 4,name, cost},7:{ id: 7,name, cost}]
-        response.json(goods);
-    });
+    }
+    else response.send('0')
+
 })
 
 
