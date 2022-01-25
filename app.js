@@ -25,23 +25,33 @@ const conn = mysql2.createConnection({
     database:"market"
 });
 
-exP.get("/shop",function (req,res){
-    conn.query("SELECT * from goods",(err,result)=>{
-        if(err){console.log('db query error:',err)}
-        else {
-                //console.log(result)
-            let goods = {};
-            result.forEach((elem, index)=>{
-                goods[elem.id] = elem;
-            });
-                //console.log('goods-------\n',goods)
-            res.render('main',{
-                sample:'List of products',
-                goods: JSON.parse(JSON.stringify(goods))
-            })
-        }
-    })
-})
+exP.get("/",function (req,res){
+    let cat = new Promise(function (resolve, reject) {
+        conn.query(
+            "select id,name, cost, image, category from (select id,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
+            function (error, result, field) {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+    });
+    let catDescription = new Promise(function (resolve, reject) {
+        conn.query(
+            "SELECT * FROM category",
+            function (error, result, field) {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+    });
+    Promise.all([cat, catDescription]).then(function (value) {
+        console.log(value[1]);
+        res.render('shop', {
+            goods: JSON.parse(JSON.stringify(value[0])),
+            cat: JSON.parse(JSON.stringify(value[1])),
+        });
+    });
+});
 
 exP.get("/cat",function (request,response){
     let id = request.query.id || 1;
@@ -76,9 +86,9 @@ exP.get('/item',function(request,response){
     let id = request.query.id || 1;
     conn.query("SELECT * FROM goods WHERE id="+id, function (err,result, fields) {
         if(err) throw err
-        console.log(result);
+        console.log('result from axp get item',result);
         response.render('item',{
-            item:result,
+            item: JSON.parse(JSON.stringify(result)),
         })
     })
 })

@@ -40,15 +40,15 @@ function showCart(data) {
     let out = '<table class="table table-striped table-cart"><tbody>';
     let total = 0;
     for (let key in cart){
-        out +=`<tr><td colspan="4"><a href="/goods?id=${key}">${data[key]['name']}</a></tr>`;
+        out +=`<tr><td colspan="4"><a href="/item?id=${key}">${data[key]['name']}</a></tr>`;
         out += `<tr><td><i class="far fa-minus-square cart-minus" data-goods_id="${key}"></i></td>`;
-        out += `<td>${cart[key]}</td>`;
+        out += `<td>${ formatPrice(cart[key]) }</td>`;
         out += `<td><i class="far fa-plus-square cart-plus" data-goods_id="${key}"></i></td>`;
-        out +=`<td>${data[key]['cost']*cart[key] } uah </td>`
+        out +=`<td>${ formatPrice(data[key]['cost']*cart[key]) } uah </td>`
         out += '</tr>';
         total += cart[key]*data[key]['cost'];
     }
-    out += `<tr><td colspan="3">Total: </td><td>${total} uah</td></tr>`;
+    out += `<tr><td colspan="3">Total: </td><td>${ formatPrice(total)} uah</td></tr>`;
     out += '</tbody></table>';
     document.querySelector('#cart-nav').innerHTML = out;
     document.querySelectorAll('.cart-minus').forEach(function(element){
@@ -78,4 +78,8 @@ function cartMinus() {
 
 function updateLocalStorageCart(){
     localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function formatPrice(price){
+    return price.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$& ');
 }
