@@ -91,14 +91,18 @@ exP.get('/item',function(request,response){
             item: JSON.parse(JSON.stringify(result)),
         })
     })
-})
+});
+
+exP.get('/order', function (req, res) {
+    res.render('order');
+});
 
 exP.post('/get-category-list',(request, response)=>{
     conn.query("SELECT id,category FROM category", (err,result,fields)=>{
         if (err) throw err;
         response.json(result)
     })
-})
+});
 
 exP.post('/get-goods-info',(request, response)=>{
     let reqKeysArray = request.body.key; // ['4','5']
@@ -117,11 +121,26 @@ exP.post('/get-goods-info',(request, response)=>{
     }
     else response.send('0')
 
+});
+
+exP.post('/finish-order',(request, response)=>{
+    if (request.body.key.length !== 0){
+        let key = Object.keys(request.body.key);
+        conn.query(
+            'SELECT id,name,cost FROM goods WHERE id IN (' + key.join(',') + ')',
+            function (error, result, fields) {
+                if (error) throw error;
+                console.log(result);
+                sendMail(request.body, result).catch(console.error);
+                response.send('1');
+            });
+    }
+    else response.send('0')
 })
 
+function sendMail(data,result){
 
-
-
+}
 
 
 
