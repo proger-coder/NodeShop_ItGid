@@ -15,6 +15,9 @@ exP.use(express.json());
 /* задаём шаблонизатор */
 exP.set('view engine','pug');
 
+/* подключаем nodemailer */
+const nodemailer = require('nodemailer');
+
 /* my Sql */
 const mysql2 = require('mysql2');
 //const mysql = require('mysql'); - выдаёт эррор 1251 Client does not support authentication protocol
@@ -130,7 +133,7 @@ exP.post('/finish-order',(request, response)=>{
             'SELECT id,name,cost FROM goods WHERE id IN (' + key.join(',') + ')',
             function (error, result, fields) {
                 if (error) throw error;
-                console.log(result);
+                console.log('result from finish-order = ', result);
                 sendMail(request.body, result).catch(console.error);
                 response.send('1');
             });
@@ -138,8 +141,52 @@ exP.post('/finish-order',(request, response)=>{
     else response.send('0')
 })
 
-function sendMail(data,result){
 
+async function sendMail(data, result) {
+    let res = '<h2>Order in lite shop</h2>';
+    let total = 0;
+    // for (let i = 0; i < result.length; i++) {
+    //     res += `<p>${result[i]['name']} - ${data.key[result[i]['id']]} - ${result[i]['cost'] * data.key[result[i]['id']]} uah</p>`;
+    //     total += result[i]['cost'] * data.key[result[i]['id']];
+    // }
+
+    result.forEach(el => {
+        res += `<p>${el['name']} - ${data.key[el['id']]} - ${el['cost'] * data.key[el['id']]} uah</p>`;
+        total += el['cost'] * data.key[el['id']];
+    })
+
+    console.log(res);
+    res += '<hr>';
+    res += `Total ${total} uah`;
+    res += `<hr>Phone: ${data.phone}`;
+    res += `<hr>Username: ${data.username}`;
+    res += `<hr>Address: ${data.address}`;
+    res += `<hr>Email: ${data.email}`;
+
+    let testAccount = await nodemailer.createTestAccount();
+
+    let transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: testAccount.user, // generated ethereal user
+            pass: testAccount.pass // generated ethereal password
+        }
+    });
+
+    let mailOption = {
+        from: '<dimanvaz04@gmail.com>',
+        to: "dimanvaz04@gmail.com," + data.email,
+        subject: "Lite shop order",
+        text: 'Hello world',
+        html: res
+    };
+
+    let info = await transporter.sendMail(mailOption);
+    console.log("MessageSent: %s", info.messageId);
+    console.log("PreviewSent: %s", nodemailer.getTestMessageUrl(info));
+    return true;
 }
 
 
