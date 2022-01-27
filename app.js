@@ -6,6 +6,9 @@ const fs = require("fs");
 const port = 3000;
 exP.listen(port);
 
+// параметр безопасности, чтобы писать в базу ?!!
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
 /* задаём папку со статикой */
 exP.use(express.static('public'));
 
@@ -135,20 +138,23 @@ exP.post('/finish-order',(request, response)=>{
                 if (error) throw error;
                 console.log('result from finish-order = ', result);
                 sendMail(request.body, result).catch(console.error);
+                saveOrder(request.body, result);
                 response.send('1');
             });
     }
     else response.send('0')
 })
 
+//data = req.body = данные заказчика из формы + id/count из cart
+//result / positionsList = ответ с базы данных по запросу = товары, найденные по id
+function saveOrder(data, result) {
 
+}
+
+//в sendMail передаются те же данные, что и в saveOrder
 async function sendMail(data, result) {
     let res = '<h2>Order in lite shop</h2>';
     let total = 0;
-    // for (let i = 0; i < result.length; i++) {
-    //     res += `<p>${result[i]['name']} - ${data.key[result[i]['id']]} - ${result[i]['cost'] * data.key[result[i]['id']]} uah</p>`;
-    //     total += result[i]['cost'] * data.key[result[i]['id']];
-    // }
 
     result.forEach(el => {
         res += `<p>${el['name']} - ${data.key[el['id']]} - ${el['cost'] * data.key[el['id']]} uah</p>`;
