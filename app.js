@@ -3,8 +3,8 @@ let exP = express();
 const fs = require("fs");
 
 /* запуск сервера */
-const port = 3000;
-exP.listen(port);
+const port = process.env.PORT || 3000;
+exP.listen(port,()=>{console.log(`server's listening on port ${port}`)});
 
 // параметр безопасности, чтобы писать в базу ?!!
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
@@ -23,13 +23,22 @@ const nodemailer = require('nodemailer');
 
 /* my Sql */
 const mysql2 = require('mysql2');
-//const mysql = require('mysql'); - выдаёт эррор 1251 Client does not support authentication protocol
+const mysql = require('mysql');
+
 const conn = mysql2.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"root",
-    database:"market"
+    // host:"localhost",
+    // user:"root",
+    // password:"root",
+    // database:"market"
+    //----для БД на  REG.ru---------
+    host:"server48.hosting.reg.ru",
+    port:3306,
+    user:"u1476436_root",
+    password:"gambelpaddi",
+    database:"u1476436_shop_reg"
 });
+
+
 
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {

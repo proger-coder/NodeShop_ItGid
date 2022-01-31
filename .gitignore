@@ -1,2 +1,6 @@
 # Project exclude paths
 /node_modules/
+/db REG_RU НОДЕ-магазин.txt
+/desktop.ini
+/package-lock.json
+/.idea
