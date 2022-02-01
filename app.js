@@ -154,6 +154,36 @@ exP.post('/finish-order',(request, response)=>{
     else response.send('0')
 })
 
+exP.get('/admin', function (req, res) {
+    res.render('admin', {});
+});
+
+exP.get('/admin-order', function (req, res) {
+    conn.query(`SELECT 
+	shop_order.id as id,
+	shop_order.user_id as user_id,
+    shop_order.goods_id as goods_id,
+    shop_order.goods_cost as goods_cost,
+    shop_order.goods_amount as goods_amount,
+    shop_order.total as total,
+    from_unixtime(date,"%Y-%m-%d %h:%m") as human_date,
+    user_info.user_name as user,
+    user_info.user_phone as phone,
+    user_info.address as address
+FROM 
+	shop_order
+LEFT JOIN	
+	user_info
+ON shop_order.user_id = user_info.id ORDER BY id DESC`, function (error, result, fields) {
+        if (error) throw error;
+        console.log(result);
+        res.render('admin-order', { order: JSON.parse(JSON.stringify(result)) });
+    });
+});
+
+
+
+
 //data = req.body = данные заказчика из формы + id/count из cart
 //result / positionsList = ответ с базы данных по запросу = товары, найденные по id
 function saveOrder(data, result) {
