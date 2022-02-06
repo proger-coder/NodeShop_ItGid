@@ -2,6 +2,9 @@ let express = require('express');
 let exP = express();
 const fs = require("fs");
 const body_parser = require('body-parser'); //парсить данные из формы
+let cookieParser = require('cookie-parser');
+let admin = require('./admin');
+const bcrypt = require('bcrypt');
 
 /* запуск сервера */
 const port = process.env.PORT || 3000;
@@ -16,6 +19,7 @@ exP.use(express.static('public'));
 /* задаём метод чтения ответа ?!?!?! а-ля body parser */
 exP.use(express.json());
 exP.use(body_parser.urlencoded({extended:true})); //парсить данные из формы
+exP.use(cookieParser());
 
 /* задаём шаблонизатор */
 exP.set('view engine','pug');
@@ -39,6 +43,19 @@ const conn = mysql2.createConnection({
     password:"gambelpaddi",
     database:"u1476436_shop_reg"
 });
+
+/* ---middleware самописное - 1 штука-------- */
+const adminWays = ['/admin','/admin-order'];
+exP.use(function (req, res, next) {
+    if (adminWays.includes(req.originalUrl)) {
+    //if (req.originalUrl == '/admin' || req.originalUrl == '/admin-order') {
+        admin(req, res, conn, next);
+    }
+    else {
+        next();
+    }
+});
+
 
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {
@@ -207,11 +224,13 @@ exP.post('/login', function (req, res) {
             }
             else {
                 result = JSON.parse(JSON.stringify(result));
-                res.cookie('hash', 'blablabla');
+                let hash = makeHash(req.body.password);
+                res.cookie('hash', hash);
+                res.cookie('id', result[0]['id']);
                 /**
                  * write hash to db
                  */
-                let sql = "UPDATE user  SET hash='blablabla' WHERE id=" + result[0]['id'];
+                let sql = "UPDATE user  SET hash='" + hash + "' WHERE id=" + result[0]['id'];
                 conn.query(sql, function (error, resultQuery) {
                     if (error) throw error;
                     console.log('we reached this step')
@@ -292,5 +311,8 @@ async function sendMail(data, result) {
     return true;
 }
 
-
+function makeHash(password) {
+    const salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(password,salt);
+}
 
