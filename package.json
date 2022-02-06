@@ -16,6 +16,8 @@
   "author": "DIMANVAZ",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.1",
+    "cookie": "^0.4.2",
     "express": "^4.17.2",
     "html": "^1.0.0",
     "mysql": "^2.18.1",

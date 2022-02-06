@@ -1,6 +1,7 @@
 let express = require('express');
 let exP = express();
 const fs = require("fs");
+const body_parser = require('body-parser'); //парсить данные из формы
 
 /* запуск сервера */
 const port = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ exP.use(express.static('public'));
 
 /* задаём метод чтения ответа ?!?!?! а-ля body parser */
 exP.use(express.json());
+exP.use(body_parser.urlencoded({extended:true})); //парсить данные из формы
 
 /* задаём шаблонизатор */
 exP.set('view engine','pug');
@@ -37,8 +39,6 @@ const conn = mysql2.createConnection({
     password:"gambelpaddi",
     database:"u1476436_shop_reg"
 });
-
-
 
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {
@@ -181,7 +181,46 @@ ON shop_order.user_id = user_info.id ORDER BY id DESC`, function (error, result,
     });
 });
 
+/**
+ *  login form ==============================
+ */
+exP.get('/login', function (req, res) {
+    res.render('login', {});
+});
 
+exP.post('/login', function (req, res) {
+    console.log('=======================');
+    console.log(req)
+    console.log(req.body);
+    console.log(req.body.login);
+    console.log(req.body.password);
+    console.log('=======================');
+    conn.query(
+        'SELECT * FROM user WHERE login="' + req.body.login + '" and password="' + req.body.password + '"',
+        function (error, result) {
+            if (error) throw (error);
+            console.log('201 result = ',result);
+            console.log('202 result.length = ',result.length);
+            if (result.length === 0) {
+                console.log('error user not found');
+                res.redirect('/login');
+            }
+            else {
+                result = JSON.parse(JSON.stringify(result));
+                res.cookie('hash', 'blablabla');
+                /**
+                 * write hash to db
+                 */
+                let sql = "UPDATE user  SET hash='blablabla' WHERE id=" + result[0]['id'];
+                conn.query(sql, function (error, resultQuery) {
+                    if (error) throw error;
+                    console.log('we reached this step')
+                    res.redirect('/admin');
+                });
+
+            };
+        });
+});
 
 
 //data = req.body = данные заказчика из формы + id/count из cart
