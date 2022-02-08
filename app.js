@@ -44,7 +44,7 @@ const conn = mysql2.createConnection({
     database:"u1476436_shop_reg"
 });
 
-/* ---middleware самописное - 1 штука-------- */
+/* ---middleware самописное - 1 штука--УРОВНЯ ПРИЛОЖЕНИЯ*/
 const adminWays = ['/admin','/admin-order'];
 exP.use(function (req, res, next) {
     if (adminWays.includes(req.originalUrl)) {
@@ -60,7 +60,7 @@ exP.use(function (req, res, next) {
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {
         conn.query(
-            "select id,name, cost, image, category from (select id,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
+            "select id,slug,name, cost, image, category from (select id,slug,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
             function (error, result, field) {
                 if (error) return reject(error);
                 resolve(result);
@@ -114,9 +114,10 @@ exP.get("/cat",function (request,response){
     })
 });
 
-exP.get('/item',function(request,response){
-    let id = request.query.id || 1;
-    conn.query("SELECT * FROM goods WHERE id="+id, function (err,result, fields) {
+exP.get('/item/*',function(request,response){
+    console.log(request.params)
+    let slug = request.params[0]
+    conn.query("SELECT * FROM goods WHERE slug="+`"${slug}"`, function (err,result, fields) {
         if(err) throw err
         //console.log('result from axp get item',result);
         response.render('item',{
