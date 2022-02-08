@@ -56,7 +56,6 @@ exP.use(function (req, res, next) {
     }
 });
 
-
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {
         conn.query(
