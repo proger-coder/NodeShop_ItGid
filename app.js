@@ -217,8 +217,8 @@ exP.post('/login', function (req, res) {
         'SELECT * FROM user WHERE login="' + req.body.login + '" and password="' + req.body.password + '"',
         function (error, result) {
             if (error) throw (error);
-            console.log('201 result = ',result);
-            console.log('202 result.length = ',result.length);
+            console.log('app.js /login result = ',result);
+            console.log('app.js /login result.length = ',result.length);
             if (result.length === 0) {
                 console.log('error user not found');
                 res.redirect('/login');
@@ -234,7 +234,6 @@ exP.post('/login', function (req, res) {
                 let sql = "UPDATE user  SET hash='" + hash + "' WHERE id=" + result[0]['id'];
                 conn.query(sql, function (error, resultQuery) {
                     if (error) throw error;
-                    console.log('we reached this step')
                     res.redirect('/admin');
                 });
 
