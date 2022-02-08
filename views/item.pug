@@ -14,6 +14,14 @@ div(class='wrap')
                         src="/images/" + item[0]['image']
                         class="goods-big-image"
                     )
+                    div(class='row')
+                        each val, index in goods_images
+                            div(class="col col-md-6")
+                                img(
+                                    src="/images/" + val['path']
+                                    class="goods-little-image"
+                                )
+
                 div(class="col col-md-8")
                     p #{item[0]['description']}
                     span(class="success") Цена: #{item[0]['cost'].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$& ')} uah

@@ -120,9 +120,15 @@ exP.get('/item/*',function(request,response){
     conn.query("SELECT * FROM goods WHERE slug="+`"${slug}"`, function (err,result, fields) {
         if(err) throw err
         //console.log('result from axp get item',result);
-        response.render('item',{
-            item: JSON.parse(JSON.stringify(result)),
-        })
+        conn.query('SELECT * FROM images WHERE goods_id=' + result[0]['id'], function (error, goodsImages, fields) {
+            if (error) throw error;
+            //console.log(goodsImages);
+            //goodsImages = JSON.parse(JSON.stringify(goodsImages));
+            response.render('item', { item: result, goods_images: goodsImages });
+            // response.render('item',{
+            //     item: JSON.parse(JSON.stringify(result)),
+            // })
+        });
     })
 });
 
@@ -208,36 +214,37 @@ exP.get('/login', function (req, res) {
 
 exP.post('/login', function (req, res) {
     console.log('=======================');
-    console.log(req)
-    console.log(req.body);
-    console.log(req.body.login);
-    console.log(req.body.password);
+    console.log(`req body = ${req.body} \n req.body.login = ${req.body.login} \n req.body.password = ${req.body.password}`);
     console.log('=======================');
+
+    // ПЕРЕДЕЛАНО "ПОД СЕССИИ" (уникальный UUID)
+    let getHashQuery = `SELECT * FROM user WHERE login= "${req.body.login}"`;
+
     conn.query(
-        'SELECT * FROM user WHERE login="' + req.body.login + '" and password="' + req.body.password + '"',
+        getHashQuery,
         function (error, result) {
             if (error) throw (error);
-            console.log('app.js /login result = ',result);
-            console.log('app.js /login result.length = ',result.length);
+                console.log('app.js full string from DB result = ',result);
+                console.log('app.js hash from DB result = ',result);
+            let downloadedHash = result[0].hash
+            if(bcrypt.compare(req.body.password, downloadedHash)){
+                console.log('уря,совпало!!!')
+                let UUID = makeHash(req.body.password+req.body.login);
+                res.cookie('UUID', UUID);
+                res.cookie('login', result[0].login);
+                /**
+                 * write UUID to db
+                 */
+                let uuidWriteQuery = `UPDATE user SET UUID="${UUID}" WHERE login="${result[0].login}"`;
+                conn.query(uuidWriteQuery, function (error, resultQuery) {
+                    if (error) throw error;
+                    res.redirect('/admin');
+                });
+            }
             if (result.length === 0) {
                 console.log('error user not found');
                 res.redirect('/login');
             }
-            else {
-                result = JSON.parse(JSON.stringify(result));
-                let hash = makeHash(req.body.password);
-                res.cookie('hash', hash);
-                res.cookie('id', result[0]['id']);
-                /**
-                 * write hash to db
-                 */
-                let sql = "UPDATE user  SET hash='" + hash + "' WHERE id=" + result[0]['id'];
-                conn.query(sql, function (error, resultQuery) {
-                    if (error) throw error;
-                    res.redirect('/admin');
-                });
-
-            };
         });
 });
 
