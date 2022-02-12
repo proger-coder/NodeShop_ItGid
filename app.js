@@ -114,19 +114,14 @@ exP.get("/cat",function (request,response){
 });
 
 exP.get('/item/*',function(request,response){
-    console.log(request.params)
+    //console.log(request.params)
     let slug = request.params[0]
     conn.query("SELECT * FROM goods WHERE slug="+`"${slug}"`, function (err,result, fields) {
         if(err) throw err
         //console.log('result from axp get item',result);
         conn.query('SELECT * FROM images WHERE goods_id=' + result[0]['id'], function (error, goodsImages, fields) {
             if (error) throw error;
-            //console.log(goodsImages);
-            //goodsImages = JSON.parse(JSON.stringify(goodsImages));
             response.render('item', { item: result, goods_images: goodsImages });
-            // response.render('item',{
-            //     item: JSON.parse(JSON.stringify(result)),
-            // })
         });
     })
 });
@@ -199,7 +194,7 @@ LEFT JOIN
 	user_info
 ON shop_order.user_id = user_info.id ORDER BY id DESC`, function (error, result, fields) {
         if (error) throw error;
-        console.log(result);
+        //console.log(result);
         res.render('admin-order', { order: JSON.parse(JSON.stringify(result)) });
     });
 });
@@ -212,37 +207,48 @@ exP.get('/login', function (req, res) {
 });
 
 exP.post('/login', function (req, res) {
-    console.log('=======================');
-    console.log(`req body = ${req.body} \n req.body.login = ${req.body.login} \n req.body.password = ${req.body.password}`);
-    console.log('=======================');
+    //console.log(`req body = ${req.body} \n req.body.login = ${req.body.login} \n req.body.password = ${req.body.password}`);
 
     // ПЕРЕДЕЛАНО "ПОД СЕССИИ" (уникальный UUID)
-    let getHashQuery = `SELECT * FROM user WHERE login= "${req.body.login}"`;
-
+    // запрос на поиск строки с хешем в базе по логину
+    let getAdminQuery = `SELECT * FROM user WHERE login="${req.body.login}"`;
+    //console.log('get hash query = ',getAdminQuery)
     conn.query(
-        getHashQuery,
+        getAdminQuery,
         function (error, result) {
             if (error) throw (error);
-                console.log('app.js full string from DB result = ',result);
-                console.log('app.js hash from DB result = ',result);
-            let downloadedHash = result[0].hash
-            if(bcrypt.compare(req.body.password, downloadedHash)){
-                console.log('уря,совпало!!!')
-                let UUID = makeHash(req.body.password+req.body.login);
-                res.cookie('UUID', UUID);
-                res.cookie('login', result[0].login);
-                /**
-                 * write UUID to db
-                 */
-                let uuidWriteQuery = `UPDATE user SET UUID="${UUID}" WHERE login="${result[0].login}"`;
-                conn.query(uuidWriteQuery, function (error, resultQuery) {
-                    if (error) throw error;
-                    res.redirect('/admin');
-                });
-            }
+
             if (result.length === 0) {
-                console.log('error user not found');
+                //console.log('error user not found');
                 res.redirect('/login');
+            }
+
+            else if(result.length !== 0){
+                //console.log('app.js full string from DB result = ',result);
+                let downloadedHash = result[0].hash
+                //console.log('doloaded hash = ',downloadedHash)
+                //console.log('req.body.password = ',req.body.password)
+
+                bcrypt.compare(req.body.password, downloadedHash).then(answer => {
+                    if(answer){
+                        //console.log('уря,совпало!!!')
+                        let UUID = makeHash(req.body.password+req.body.login);
+                        res.cookie('UUID', UUID);
+                        res.cookie('login', result[0].login);
+                        /**
+                         * write UUID to db
+                         */
+                        let uuidWriteQuery = `UPDATE user SET UUID="${UUID}" WHERE login="${result[0].login}"`;
+                        conn.query(uuidWriteQuery, function (error, resultQuery) {
+                            if (error) throw error;
+                            res.redirect('/admin');
+                        });
+                    } else {
+                        res.render('login',{
+                            stats:'wrong password'
+                        })
+                    }
+                })
             }
         });
 });
