@@ -5,6 +5,8 @@ const body_parser = require('body-parser'); //парсить данные из �
 let cookieParser = require('cookie-parser');
 let admin = require('./admin');
 const bcrypt = require('bcrypt');
+const dotenv = require('dotenv');
+dotenv.config();
 
 /* запуск сервера */
 const port = process.env.PORT || 3000;
@@ -32,16 +34,16 @@ const mysql2 = require('mysql2');
 const mysql = require('mysql');
 
 const conn = mysql2.createConnection({
-    // host:"localhost",
-    // user:"root",
-    // password:"root",
-    // database:"market"
-    //----для БД на  REG.ru---------
-    host:"server48.hosting.reg.ru",
-    port:3306,
-    user:"u1476436_root",
-    password:"gambelpaddi",
-    database:"u1476436_shop_reg"
+    host:"localhost",
+    user:"root",
+    password:"root",
+    database:"market"
+    //----для БД на  railway---------
+    // host:process.env.MYSQLHOST,
+    // port:process.env.MYSQLPORT,
+    // user:process.env.MYSQLUSER,
+    // password:process.env.MYSQLPASSWORD,
+    // database:process.env.MYSQLDATABASE
 });
 
 /* ---middleware самописное - 1 штука--УРОВНЯ ПРИЛОЖЕНИЯ*/
@@ -59,7 +61,7 @@ exP.use(function (req, res, next) {
 exP.get("/",function (req,res){
     let cat = new Promise(function (resolve, reject) {
         conn.query(
-            "select id,slug,name, cost, image, category from (select id,slug,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
+            "select id, slug, name, cost, image, category from (select id,slug,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
             function (error, result, field) {
                 if (error) return reject(error);
                 resolve(result);
