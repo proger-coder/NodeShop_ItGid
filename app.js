@@ -34,16 +34,16 @@ const mysql2 = require('mysql2');
 const mysql = require('mysql');
 
 const conn = mysql2.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"root",
-    database:"market"
+    // host:"localhost",
+    // user:"root",
+    // password:"root",
+    // database:"market",
     //----для БД на  railway---------
-    // host:process.env.MYSQLHOST,
-    // port:process.env.MYSQLPORT,
-    // user:process.env.MYSQLUSER,
-    // password:process.env.MYSQLPASSWORD,
-    // database:process.env.MYSQLDATABASE
+    host:process.env.MYSQLHOST,
+    port:process.env.MYSQLPORT,
+    user:process.env.MYSQLUSER,
+    password:process.env.MYSQLPASSWORD,
+    database:process.env.MYSQLDATABASE
 });
 
 /* ---middleware самописное - 1 штука--УРОВНЯ ПРИЛОЖЕНИЯ*/
