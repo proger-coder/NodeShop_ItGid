@@ -1,6 +1,5 @@
 let express = require('express');
 let exP = express();
-const fs = require("fs");
 const body_parser = require('body-parser'); //парсить данные из формы
 let cookieParser = require('cookie-parser');
 let admin = require('./admin');
@@ -31,13 +30,8 @@ const nodemailer = require('nodemailer');
 
 /* my Sql */
 const mysql2 = require('mysql2');
-const mysql = require('mysql');
 
 const conn = mysql2.createConnection({
-    // host:"localhost",
-    // user:"root",
-    // password:"root",
-    // database:"market",
     //----для БД на  railway---------
     host:process.env.MYSQLHOST,
     port:process.env.MYSQLPORT,
