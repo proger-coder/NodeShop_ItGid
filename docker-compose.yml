@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  app:
+    container_name: node-shop-container
+    image: dimanvaz/small-projects:node-shop-itgid
+    ports:
+      - "3002:3002"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - MYSQL_USER=${MYSQLUSER}
+      - MYSQL_PASSWORD=${MYSQLPASSWORD}
+      - MYSQL_DB=${MYSQLDATABASE}
+      - MYSQL_PORT=${MYSQLPORT}
+    volumes:
+      - appdata:/app/sql_scripts
+    networks:
+      - node-shop-network
+
+  db:
+    container_name: mysql-container
+    image: mysql:5.7
+    restart: always
+    volumes:
+      - dbdata:/var/lib/mysql
+      - appdata:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: market
+      MYSQL_USER: mysql-user
+      MYSQL_PASSWORD: root
+    networks:
+      - node-shop-network
+
+networks:
+  node-shop-network:
+
+volumes:
+  dbdata:
+  appdata:

@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 /* запуск сервера */
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 exP.listen(port,()=>{console.log(`server's listening on port ${port}`)});
 
 // параметр безопасности, чтобы писать в базу ?!!
@@ -31,14 +31,37 @@ const nodemailer = require('nodemailer');
 /* my Sql */
 const mysql2 = require('mysql2');
 
-const conn = mysql2.createConnection({
-    //----для БД на  railway---------
-    host:process.env.MYSQLHOST,
-    port:process.env.MYSQLPORT,
-    user:process.env.MYSQLUSER,
-    password:process.env.MYSQLPASSWORD,
-    database:process.env.MYSQLDATABASE
-});
+/** Делаем отказоустойчивый polling БД, чтобы программа не падала  */
+let conn;
+
+function handleDisconnect() {
+    conn = mysql2.createConnection({
+        host: process.env.MYSQLHOST,
+        //host: process.env.DB_HOST, // для контейнера с БД MySQL. См docker-compose.yml
+        port: process.env.MYSQLPORT,
+        user: process.env.MYSQLUSER,
+        password: process.env.MYSQLPASSWORD,
+        database: process.env.MYSQLDATABASE,
+    });
+
+    conn.connect(function(err) {
+        if(err) {
+            console.log('Error connecting to MySQL database:', err);
+            setTimeout(handleDisconnect, 2000);
+        }
+    });
+
+    conn.on('error', function(err) {
+        console.log('MySQL connection error:', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
+
+handleDisconnect();
 
 /* ---middleware самописное - 1 штука--УРОВНЯ ПРИЛОЖЕНИЯ*/
 const adminWays = ['/admin','/admin-order'];
